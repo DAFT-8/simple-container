@@ -1,0 +1,48 @@
+#!/bin/bash
+
+command -v curl > /dev/null 2>&1 || { echo >&2 "I require curl but it's not installed. Install it. Aborting."; exit 1; }
+command -v tar > /dev/null 2>&1 || { echo >&2 "I require tar but it's not installed. Install it. Aborting."; exit 1; }
+command -v wget > /dev/null 2>&1 || { echo >&2 "I require wget but it's not installed. Install it. Aborting."; exit 1; }
+
+ARCH="$(uname -m)"
+TARBALL_VERSION=`curl -s "https://dl-cdn.alpinelinux.org/alpine/edge/releases/${ARCH}/latest-releases.yaml" | grep --max-count=1 --only-matching version.* | sed -e "s/[^0-9.]*//g" -e "s/-$//"`
+TARBALL_URL="https://dl-cdn.alpinelinux.org/alpine/edge/releases/${ARCH}/alpine-minirootfs-${TARBALL_VERSION}-${ARCH}.tar.gz"
+TARBALL_DIR="/opt/.alpine"
+TARBALL="alpine-minirootfs-${TARBALL_VERSION}-${ARCH}.tar.gz"
+
+[[ ! -d ${TARBALL_DIR} ]] && mkdir -p ${TARBALL_DIR} && cd /tmp && wget ${TARBALL_URL} && wget ${TARBALL_URL}.sha256 && sha256sum -c ${TARBALL}.sha256 && tar --warning=no-unknown-keyword --delay-directory-restore --preserve-permissions -zxf ${TARBALL} -C ${TARBALL_DIR} --exclude="dev" && rm -rfd ${TARBALL}*
+
+mkdir -p ${TARBALL_DIR}/dev
+mkdir -p ${TARBALL_DIR}/proc
+mkdir -p ${TARBALL_DIR}/sys
+
+doas mount --bind /dev ${TARBALL_DIR}/dev >/dev/null 2>&1 || sudo mount --bind /dev ${TARBALL_DIR}/dev >/dev/null 2>&1
+doas mount --bind /dev ${TARBALL_DIR}/proc >/dev/null 2>&1 || sudo mount --bind /dev ${TARBALL_DIR}/proc >/dev/null 2>&1
+doas mount --bind /dev ${TARBALL_DIR}/sys >/dev/null 2>&1 || sudo mount --bind /dev ${TARBALL_DIR}/sys >/dev/null 2>&1
+
+echo -e "nameserver 9.9.9.11
+nameserver 149.112.112.11
+options timeout:1 attempts:3 trust-ad single-request bogus-priv stop-dns-rebind domain-needed" >${TARBALL_DIR}/etc/resolv.conf
+
+echo -e "127.0.0.1   localhost.localdomain localhost
+::1         localhost.localdomain localhost ipv6-localhost ipv6-loopback
+fe00::0     ipv6-localnet
+ff00::0     ipv6-mcastprefix
+ff02::1     ipv6-allnodes
+ff02::2     ipv6-allrouters
+ff02::3     ipv6-allhosts" >${TARBALL_DIR}/etc/hosts
+
+echo -e "umask 077" >${TARBALL_DIR}/etc/profile.d/umask.sh
+
+echo -e "" >${TARBALL_DIR}/etc/fstab
+
+doas chroot ${TARBALL_DIR} deluser alpine || sudo chroot ${TARBALL_DIR} deluser alpine
+doas chroot ${TARBALL_DIR} addgroup -g 1000 alpine || sudo chroot ${TARBALL_DIR} addgroup -g 1000 alpine
+doas chroot ${TARBALL_DIR} adduser -u 1000 -G alpine -s /bin/sh -D alpine || sudo chroot ${TARBALL_DIR} adduser -u 1000 -G alpine -s /bin/sh -D alpine
+doas chroot ${TARBALL_DIR} su -c 'printf "alpine\nalpine" | passwd alpine' || sudo chroot ${TARBALL_DIR} su -c 'printf "alpine\nalpine" | passwd alpine'
+doas chroot ${TARBALL_DIR} chown -R alpine:alpine /home/alpine || sudo chroot ${TARBALL_DIR} chown -R alpine:alpine /home/alpine
+doas chroot ${TARBALL_DIR} /bin/sh --login || sudo chroot ${TARBALL_DIR} /bin/sh --login
+
+doas umount ${TARBALL_DIR}/** >/dev/null 2>&1 || sudo umount ${TARBALL_DIR}/** >/dev/null 2>&1
+doas umount ${TARBALL_DIR}/** >/dev/null 2>&1 || sudo umount ${TARBALL_DIR}/** >/dev/null 2>&1
+doas umount ${TARBALL_DIR}/** >/dev/null 2>&1 || sudo umount ${TARBALL_DIR}/** >/dev/null 2>&1

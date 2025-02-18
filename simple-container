@@ -36,12 +36,12 @@ echo -e "umask 077" >${TARBALL_DIR}/etc/profile.d/umask.sh
 
 echo -e "" >${TARBALL_DIR}/etc/fstab
 
-doas chroot ${TARBALL_DIR} deluser alpine || sudo chroot ${TARBALL_DIR} deluser alpine
-doas chroot ${TARBALL_DIR} addgroup -g 1000 alpine || sudo chroot ${TARBALL_DIR} addgroup -g 1000 alpine
-doas chroot ${TARBALL_DIR} adduser -u 1000 -G alpine -s /bin/sh -D alpine || sudo chroot ${TARBALL_DIR} adduser -u 1000 -G alpine -s /bin/sh -D alpine
-doas chroot ${TARBALL_DIR} su -c 'printf "alpine\nalpine" | passwd alpine' || sudo chroot ${TARBALL_DIR} su -c 'printf "alpine\nalpine" | passwd alpine'
-doas chroot ${TARBALL_DIR} chown -R alpine:alpine /home/alpine || sudo chroot ${TARBALL_DIR} chown -R alpine:alpine /home/alpine
-doas chroot ${TARBALL_DIR} /bin/sh --login || sudo chroot ${TARBALL_DIR} /bin/sh --login
+doas chroot ${TARBALL_DIR} deluser alpine >/dev/null 2>&1 || sudo chroot ${TARBALL_DIR} deluser alpine >/dev/null 2>&1
+doas chroot ${TARBALL_DIR} addgroup -g 1000 alpine >/dev/null 2>&1 || sudo chroot ${TARBALL_DIR} addgroup -g 1000 alpine >/dev/null 2>&1
+doas chroot ${TARBALL_DIR} adduser -u 1000 -G alpine -s /bin/sh -D alpine >/dev/null 2>&1 || sudo chroot ${TARBALL_DIR} adduser -u 1000 -G alpine -s /bin/sh -D alpine >/dev/null 2>&1
+doas chroot ${TARBALL_DIR} su -c 'printf "alpine\nalpine" | passwd alpine >/dev/null 2>&1' || sudo chroot ${TARBALL_DIR} su -c 'printf "alpine\nalpine" | passwd alpine >/dev/null 2>&1'
+doas chroot ${TARBALL_DIR} chown -R alpine:alpine /home/alpine >/dev/null 2>&1 || sudo chroot ${TARBALL_DIR} chown -R alpine:alpine /home/alpine >/dev/null 2>&1
+doas chroot ${TARBALL_DIR} /bin/sh --login 2>&1 || sudo chroot ${TARBALL_DIR} /bin/sh --login
 
 doas umount ${TARBALL_DIR}/** >/dev/null 2>&1 || sudo umount ${TARBALL_DIR}/** >/dev/null 2>&1
 doas umount ${TARBALL_DIR}/** >/dev/null 2>&1 || sudo umount ${TARBALL_DIR}/** >/dev/null 2>&1

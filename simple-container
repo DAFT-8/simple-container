@@ -17,8 +17,8 @@ mkdir -p ${TARBALL_DIR}/proc
 mkdir -p ${TARBALL_DIR}/sys
 
 doas mount --bind /dev ${TARBALL_DIR}/dev >/dev/null 2>&1 || sudo mount --bind /dev ${TARBALL_DIR}/dev >/dev/null 2>&1
-doas mount --bind /dev ${TARBALL_DIR}/proc >/dev/null 2>&1 || sudo mount --bind /dev ${TARBALL_DIR}/proc >/dev/null 2>&1
-doas mount --bind /dev ${TARBALL_DIR}/sys >/dev/null 2>&1 || sudo mount --bind /dev ${TARBALL_DIR}/sys >/dev/null 2>&1
+doas mount --bind /proc ${TARBALL_DIR}/proc >/dev/null 2>&1 || sudo mount --bind /proc ${TARBALL_DIR}/proc >/dev/null 2>&1
+doas mount --bind /sys ${TARBALL_DIR}/sys >/dev/null 2>&1 || sudo mount --bind /sys ${TARBALL_DIR}/sys >/dev/null 2>&1
 
 echo -e "nameserver 9.9.9.11
 nameserver 149.112.112.11
